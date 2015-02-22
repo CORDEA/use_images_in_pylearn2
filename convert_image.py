@@ -48,5 +48,5 @@ def convert_image(_PATH, _FILENAME, _SIZE, _COLOR):
                     str(label) # Label information must be Number.
                     + _DEL + data + '\n'
                     )
-            comp.write(' '.join([str(label), filename]) + '\n')
+            comp.write(' '.join([str(label), dirname, filename]) + '\n')
         label += 1
