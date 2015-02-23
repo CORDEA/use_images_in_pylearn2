@@ -30,7 +30,8 @@ class HogeDataset(DenseDesignMatrix):
             fit_test_preprocessor   = False,
             image_to_csv            = False,
             image_size              = 128,
-            color                   = False
+            color                   = False,
+            save                    = False
             ):
         """
         which_set: A string specifying which portion of the dataset
@@ -64,9 +65,11 @@ class HogeDataset(DenseDesignMatrix):
 
         # If the file name contains a "train", header is True.
         if "train" in which_set:
-            X, y = self._load_data(path, True)
+            expect_labels = True
         else:
-            X, y = self._load_data(path, False)
+            expect_labels = False
+
+        X, y = self._load_data(path, expect_labels, save)
 
         if start is not None:
             assert which_set != 'test'
@@ -97,21 +100,22 @@ class HogeDataset(DenseDesignMatrix):
     def get_test_set(self):
         return EmotionsDataset(**self.test_args)
 
-    def _load_data(self, path, expect_labels):
+    def _load_data(self, path, expect_labels, saveFlag):
 
         assert path.endswith('.csv')
 
-        # If a previous call to this method has already converted
-        # the data to numpy format, load the numpy directly
-        X_path = path[:-4] + '.X.npy'
-        Y_path = path[:-4] + '.Y.npy'
-        if os.path.exists(X_path):
-            X = np.load(X_path)
-            if expect_labels:
-                y = np.load(Y_path)
-            else:
-                y = None
-            return X, y
+        if saveFlag:
+            # If a previous call to this method has already converted
+            # the data to numpy format, load the numpy directly
+            X_path = path[:-4] + '.X.npy'
+            Y_path = path[:-4] + '.Y.npy'
+            if os.path.exists(X_path):
+                X = np.load(X_path)
+                if expect_labels:
+                    y = np.load(Y_path)
+                else:
+                    y = None
+                return X, y
 
         # Convert the .csv file to numpy
         csv_file = open(path, 'r')
@@ -144,8 +148,9 @@ class HogeDataset(DenseDesignMatrix):
         else:
             y = None
 
-        np.save(X_path, X)
-        if y is not None:
-            np.save(Y_path, y)
+        if saveFlag:
+            np.save(X_path, X)
+            if y is not None:
+                np.save(Y_path, y)
 
         return X, y
